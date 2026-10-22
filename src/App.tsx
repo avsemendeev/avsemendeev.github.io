@@ -260,23 +260,23 @@ function SalaryPriceChart({ data }: { data: any[] }) {
 function RentChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Аренда 1-комнатной квартиры</h3>
-      <p className="text-xs text-neutral-500 mb-6">Помесячно, ₽</p>
+      <h3 className="text-lg font-light mb-1">Аренда и зарплата</h3>
+      <p className="text-xs text-neutral-500 mb-6">Сравнение динамики, ₽</p>
       <ResponsiveContainer width="100%" height={360}>
-        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <defs>
-            <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#171717" stopOpacity={0.08} />
-              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
-            </linearGradient>
-          </defs>
+        <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Area type="monotone" dataKey="rent1room" name="Аренда" stroke="#171717" strokeWidth={1.5} fill="url(#gRent)" dot={false} />
-        </AreaChart>
+          <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke="#171717" strokeWidth={1.5} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="salary" name="Зарплата" stroke="#a3a3a3" strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
+        </ComposedChart>
       </ResponsiveContainer>
+      <div className="flex gap-6 mt-3 text-xs text-neutral-500">
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-900" />Аренда</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-400" style={{ borderTop: '1px dashed' }} />Зарплата</span>
+      </div>
     </div>
   );
 }
