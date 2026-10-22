@@ -6,28 +6,21 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   AreaChart,
   Area,
   ComposedChart,
-  Bar,
 } from 'recharts';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { housingData } from './data/housingData';
 
 const years = Array.from({ length: 26 }, (_, i) => 2000 + i);
 
-const formatNumber = (value: number) => {
-  return new Intl.NumberFormat('ru-RU').format(value);
-};
+const formatNumber = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
 
 const formatCurrency = (value: number) => {
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(1)} млн`;
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(0)} тыс`;
-  }
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)} млн`;
+  if (value >= 1000) return `${(value / 1000).toFixed(0)} тыс`;
   return value.toString();
 };
 
@@ -36,8 +29,8 @@ const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Ию�
 const formatMonthTick = (value: string) => {
   const [year, month] = value.split('-');
   const m = parseInt(month);
-  if (m === 1) return `${year}`;
-  if (m === 7) return `Июл`;
+  if (m === 1) return year;
+  if (m === 7) return 'Июл';
   return '';
 };
 
@@ -55,234 +48,177 @@ export default function App() {
     });
   }, [startYear, endYear]);
 
-  // Показываем только январские данные для таблицы
-  const yearlyData = useMemo(() => {
-    return filteredData.filter((d) => d.month.endsWith('-01'));
-  }, [filteredData]);
-
-  const chartTabs: { id: ChartType; label: string; icon: string }[] = [
-    { id: 'salary-price', label: 'ЗП vs Цена м²', icon: '📈' },
-    { id: 'rent', label: 'Аренда', icon: '🏠' },
-    { id: 'affordability', label: 'Доступность', icon: '⏱️' },
-    { id: 'rent-share', label: 'Доля аренды', icon: '📊' },
-    { id: 'apartment-cost', label: 'Стоимость 54м²', icon: '💰' },
-    { id: 'combined', label: 'Сводный', icon: '📋' },
+  const chartTabs: { id: ChartType; label: string }[] = [
+    { id: 'salary-price', label: 'Зарплата и цена м²' },
+    { id: 'rent', label: 'Аренда' },
+    { id: 'affordability', label: 'Доступность' },
+    { id: 'rent-share', label: 'Доля аренды' },
+    { id: 'apartment-cost', label: 'Стоимость 54 м²' },
+    { id: 'combined', label: 'Сводный' },
   ];
 
-  const latestData = filteredData[filteredData.length - 1];
-  const firstData = filteredData[0];
-
-  const salaryGrowth = latestData && firstData
-    ? ((latestData.salary / firstData.salary - 1) * 100).toFixed(0)
-    : '0';
-  const priceGrowth = latestData && firstData
-    ? ((latestData.pricePerSqm / firstData.pricePerSqm - 1) * 100).toFixed(0)
-    : '0';
+  const latest = filteredData[filteredData.length - 1];
+  const first = filteredData[0];
+  const salaryGrowth = latest && first ? ((latest.salary / first.salary - 1) * 100).toFixed(0) : '0';
+  const priceGrowth = latest && first ? ((latest.pricePerSqm / first.pricePerSqm - 1) * 100).toFixed(0) : '0';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      {/* Header */}
-      <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            🏘️ Доступность жилья в России
+    <div className="min-h-screen bg-white text-neutral-900">
+      <div className="max-w-6xl mx-auto px-5 py-10">
+        {/* Header */}
+        <header className="mb-12">
+          <h1 className="text-3xl font-light tracking-tight text-neutral-900">
+            Доступность жилья
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Аналитика рынка недвижимости и доходов населения • 2000–2025 (помесячно)
+          <p className="text-sm text-neutral-500 mt-2">
+            Россия · 2000–2025 · помесячные данные
           </p>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Controls */}
-        <div className="bg-slate-800/50 rounded-2xl p-4 md:p-6 border border-slate-700/50 backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-slate-300 whitespace-nowrap">Период:</label>
-              <select
-                value={startYear}
-                onChange={(e) => setStartYear(Number(e.target.value))}
-                className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-              <span className="text-slate-400">—</span>
-              <select
-                value={endYear}
-                onChange={(e) => setEndYear(Number(e.target.value))}
-                className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {years.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex gap-2 ml-auto flex-wrap">
-              <button
-                onClick={() => { setStartYear(2000); setEndYear(2025); }}
-                className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-              >
-                Всё время
-              </button>
-              <button
-                onClick={() => { setStartYear(2020); setEndYear(2025); }}
-                className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-              >
-                2020–2025
-              </button>
-              <button
-                onClick={() => { setStartYear(2010); setEndYear(2020); }}
-                className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-              >
-                2010–2020
-              </button>
-              <button
-                onClick={() => { setStartYear(2000); setEndYear(2010); }}
-                className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
-              >
-                2000–2010
-              </button>
-            </div>
+        <div className="flex flex-wrap items-center gap-4 mb-10 pb-6 border-b border-neutral-200">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-neutral-500">Период</span>
+            <select
+              value={startYear}
+              onChange={(e) => setStartYear(Number(e.target.value))}
+              className="bg-transparent border-b border-neutral-300 py-1 px-1 text-neutral-900 focus:outline-none focus:border-neutral-900"
+            >
+              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <span className="text-neutral-400">—</span>
+            <select
+              value={endYear}
+              onChange={(e) => setEndYear(Number(e.target.value))}
+              className="bg-transparent border-b border-neutral-300 py-1 px-1 text-neutral-900 focus:outline-none focus:border-neutral-900"
+            >
+              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
-          <p className="text-xs text-slate-500 mt-3">
-            📅 Показано {filteredData.length} месяцев данных
-          </p>
+          <div className="flex gap-1 ml-auto">
+            {[
+              { label: '2000–2025', s: 2000, e: 2025 },
+              { label: '2010–2020', s: 2010, e: 2020 },
+              { label: '2020–2025', s: 2020, e: 2025 },
+            ].map((p) => (
+              <button
+                key={p.label}
+                onClick={() => { setStartYear(p.s); setEndYear(p.e); }}
+                className="px-3 py-1 text-xs text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-400 rounded-full transition-colors"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <StatCard
-            title="Зарплата (посл.)"
-            value={`${formatNumber(latestData?.salary || 0)} ₽`}
-            subtitle={`Рост: ${salaryGrowth}%`}
-            color="blue"
-          />
-          <StatCard
-            title="Цена за м² (посл.)"
-            value={`${formatNumber(latestData?.pricePerSqm || 0)} ₽`}
-            subtitle={`Рост: ${priceGrowth}%`}
-            color="purple"
-          />
-          <StatCard
-            title="Аренда 1к"
-            value={`${formatNumber(latestData?.rent1room || 0)} ₽`}
-            subtitle={`${latestData?.rentShareOfSalary || 0}% от ЗП`}
-            color="green"
-          />
-          <StatCard
-            title="Доступность"
-            value={`${latestData?.yearsToBuy || 0} лет`}
-            subtitle={`Квартира 54м²`}
-            color="orange"
-          />
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <StatItem label="Зарплата" value={`${formatNumber(latest?.salary || 0)} ₽`} sub={`+${salaryGrowth}%`} />
+          <StatItem label="Цена м²" value={`${formatNumber(latest?.pricePerSqm || 0)} ₽`} sub={`+${priceGrowth}%`} />
+          <StatItem label="Аренда 1к" value={`${formatNumber(latest?.rent1room || 0)} ₽`} sub={`${latest?.rentShareOfSalary || 0}% от ЗП`} />
+          <StatItem label="Доступность" value={`${latest?.yearsToBuy || 0} лет`} sub="квартира 54 м²" />
         </div>
 
         {/* Chart Tabs */}
-        <div className="flex flex-wrap gap-2">
+        <nav className="flex flex-wrap gap-1 mb-8 border-b border-neutral-200">
           {chartTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveChart(tab.id)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`px-4 py-2.5 text-sm transition-colors relative ${
                 activeChart === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                  ? 'text-neutral-900'
+                  : 'text-neutral-500 hover:text-neutral-800'
               }`}
             >
-              <span className="mr-1">{tab.icon}</span>
               {tab.label}
+              {activeChart === tab.id && (
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-neutral-900" />
+              )}
             </button>
           ))}
-        </div>
+        </nav>
 
-        {/* Chart Area */}
-        <div className="bg-slate-800/50 rounded-2xl p-4 md:p-6 border border-slate-700/50 backdrop-blur-sm">
+        {/* Chart */}
+        <section className="mb-16">
           {activeChart === 'salary-price' && <SalaryPriceChart data={filteredData} />}
           {activeChart === 'rent' && <RentChart data={filteredData} />}
           {activeChart === 'affordability' && <AffordabilityChart data={filteredData} />}
           {activeChart === 'rent-share' && <RentShareChart data={filteredData} />}
           {activeChart === 'apartment-cost' && <ApartmentCostChart data={filteredData} />}
           {activeChart === 'combined' && <CombinedChart data={filteredData} />}
-        </div>
+        </section>
 
-        {/* Full Data Table */}
-        <div className="bg-slate-800/50 rounded-2xl p-4 md:p-6 border border-slate-700/50 backdrop-blur-sm">
-          <h3 className="text-lg font-semibold mb-4 text-slate-200">📋 Таблица данных (помесячно)</h3>
-          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+        {/* Table */}
+        <section className="mb-16">
+          <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
+            Данные · помесячно
+          </h2>
+          <div className="overflow-x-auto max-h-[480px] overflow-y-auto border border-neutral-200 rounded-sm">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-slate-800">
-                <tr className="border-b border-slate-700">
-                  <th className="text-left py-2 px-2 text-slate-400 font-medium">Месяц</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">ЗП, ₽</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Цена м², ₽</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Аренда, ₽</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">54м², млн ₽</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Лет</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">Аренда/ЗП %</th>
-                  <th className="text-right py-2 px-2 text-slate-400 font-medium">м²/ЗП</th>
+              <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+                <tr className="border-b border-neutral-200">
+                  <th className="text-left py-2 px-3 font-medium">Месяц</th>
+                  <th className="text-right py-2 px-3 font-medium">ЗП, ₽</th>
+                  <th className="text-right py-2 px-3 font-medium">Цена м², ₽</th>
+                  <th className="text-right py-2 px-3 font-medium">Аренда, ₽</th>
+                  <th className="text-right py-2 px-3 font-medium">54 м², млн</th>
+                  <th className="text-right py-2 px-3 font-medium">Лет</th>
+                  <th className="text-right py-2 px-3 font-medium">Аренда/ЗП</th>
+                  <th className="text-right py-2 px-3 font-medium">м²/ЗП</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((d) => {
                   const [y, m] = d.month.split('-');
                   return (
-                    <tr key={d.month} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="py-1.5 px-2 font-medium text-slate-200">{monthNames[parseInt(m)-1]} {y}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.salary)}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.pricePerSqm)}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.rent1room)}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{(d.apartmentCost54 / 1000000).toFixed(2)}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{d.yearsToBuy}</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{d.rentShareOfSalary}%</td>
-                      <td className="py-1.5 px-2 text-right text-slate-300">{d.sqmToSalary}</td>
+                    <tr key={d.month} className="border-b border-neutral-100 hover:bg-neutral-50/50">
+                      <td className="py-1.5 px-3 text-neutral-700">{monthNames[parseInt(m)-1]} {y}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.salary)}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.pricePerSqm)}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.rent1room)}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{(d.apartmentCost54 / 1000000).toFixed(2)}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{d.yearsToBuy}</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{d.rentShareOfSalary}%</td>
+                      <td className="py-1.5 px-3 text-right tabular-nums">{d.sqmToSalary}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
 
         {/* Footer */}
-        <footer className="text-center text-slate-500 text-sm py-6 border-t border-slate-700/50">
-          <p>Данные основаны на статистике средних зарплат и рыночных цен на недвижимость в России</p>
-          <p className="mt-1">Квартира 54 м² (типовая 1-комнатная) • Расчёт доступности: стоимость / (зарплата × 12)</p>
+        <footer className="pt-8 border-t border-neutral-200 text-xs text-neutral-400">
+          <p>Квартира 54 м² · доступность = стоимость / (зарплата × 12)</p>
         </footer>
-      </main>
+      </div>
     </div>
   );
 }
 
-// Stat Card Component
-function StatCard({ title, value, subtitle, color }: { title: string; value: string; subtitle: string; color: string }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'from-blue-500/20 to-blue-600/10 border-blue-500/30',
-    purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/30',
-    green: 'from-green-500/20 to-green-600/10 border-green-500/30',
-    orange: 'from-orange-500/20 to-orange-600/10 border-orange-500/30',
-  };
-
+function StatItem({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
-    <div className={`bg-gradient-to-br ${colorClasses[color]} border rounded-xl p-3 md:p-4`}>
-      <p className="text-xs text-slate-400 mb-1">{title}</p>
-      <p className="text-lg md:text-xl font-bold text-white">{value}</p>
-      <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+    <div>
+      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-2xl font-light tabular-nums text-neutral-900">{value}</p>
+      <p className="text-xs text-neutral-500 mt-1">{sub}</p>
     </div>
   );
 }
 
-// Custom Tooltip
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     const [year, month] = label.split('-');
     const m = monthNames[parseInt(month) - 1];
     return (
-      <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-xl">
-        <p className="text-slate-300 font-medium mb-1">{m} {year}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} style={{ color: entry.color }} className="text-sm">
+      <div className="bg-white border border-neutral-200 px-3 py-2 shadow-sm">
+        <p className="text-xs text-neutral-500 mb-1">{m} {year}</p>
+        {payload.map((entry: any, i: number) => (
+          <p key={i} className="text-sm text-neutral-900 tabular-nums">
+            <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: entry.color }} />
             {entry.name}: {typeof entry.value === 'number' ? formatNumber(entry.value) : entry.value}
             {entry.name?.includes('ЗП') || entry.name?.includes('Цена') || entry.name?.includes('Аренда') || entry.name?.includes('Стоимость') ? ' ₽' : ''}
             {entry.name?.includes('лет') || entry.name?.includes('Лет') ? ' лет' : ''}
@@ -295,24 +231,28 @@ function CustomTooltip({ active, payload, label }: any) {
   return null;
 }
 
-// Chart Components
+const axisStyle = { fill: '#a3a3a3', fontSize: 11 };
+
 function SalaryPriceChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📈 Динамика зарплаты и цены за м² (помесячно)</h3>
-      <p className="text-sm text-slate-400 mb-4">Сравнение роста доходов и стоимости недвижимости</p>
-      <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis yAxisId="left" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
-          <Line yAxisId="left" type="monotone" dataKey="salary" name="Зарплата (₽)" stroke="#3b82f6" strokeWidth={2} dot={false} />
-          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена за м² (₽)" stroke="#a855f7" strokeWidth={2} dot={false} />
+      <h3 className="text-lg font-light mb-1">Зарплата и цена за м²</h3>
+      <p className="text-xs text-neutral-500 mb-6">Помесячно, ₽</p>
+      <ResponsiveContainer width="100%" height={360}>
+        <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Line yAxisId="left" type="monotone" dataKey="salary" name="Зарплата" stroke="#171717" strokeWidth={1.5} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke="#a3a3a3" strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
         </ComposedChart>
       </ResponsiveContainer>
+      <div className="flex gap-6 mt-3 text-xs text-neutral-500">
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-900" />Зарплата</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-400" style={{ borderTop: '1px dashed' }} />Цена м²</span>
+      </div>
     </div>
   );
 }
@@ -320,22 +260,21 @@ function SalaryPriceChart({ data }: { data: any[] }) {
 function RentChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">🏠 Динамика стоимости аренды 1-комнатной квартиры (помесячно)</h3>
-      <p className="text-sm text-slate-400 mb-4">Рост арендной платы за период</p>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
+      <h3 className="text-lg font-light mb-1">Аренда 1-комнатной квартиры</h3>
+      <p className="text-xs text-neutral-500 mb-6">Помесячно, ₽</p>
+      <ResponsiveContainer width="100%" height={360}>
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
-            <linearGradient id="rentGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+            <linearGradient id="gRent" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#171717" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="rent1room" name="Аренда 1к (₽)" stroke="#10b981" strokeWidth={2} fill="url(#rentGradient)" dot={false} />
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Area type="monotone" dataKey="rent1room" name="Аренда" stroke="#171717" strokeWidth={1.5} fill="url(#gRent)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -345,22 +284,21 @@ function RentChart({ data }: { data: any[] }) {
 function AffordabilityChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">⏱️ Доступность покупки квартиры — лет накоплений (помесячно)</h3>
-      <p className="text-sm text-slate-400 mb-4">Сколько лет нужно откладывать всю зарплату для покупки квартиры 54 м²</p>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} domain={['dataMin - 1', 'dataMax + 1']} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
+      <h3 className="text-lg font-light mb-1">Доступность покупки</h3>
+      <p className="text-xs text-neutral-500 mb-6">Лет накоплений для квартиры 54 м²</p>
+      <ResponsiveContainer width="100%" height={360}>
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
-            <linearGradient id="affordGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+            <linearGradient id="gAff" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#171717" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="yearsToBuy" name="Лет до покупки" stroke="#f97316" strokeWidth={2} fill="url(#affordGradient)" dot={false} />
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis tick={axisStyle} domain={['dataMin - 1', 'dataMax + 1']} axisLine={false} tickLine={false} width={40} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Area type="monotone" dataKey="yearsToBuy" name="Лет" stroke="#171717" strokeWidth={1.5} fill="url(#gAff)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -370,22 +308,21 @@ function AffordabilityChart({ data }: { data: any[] }) {
 function RentShareChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📊 Доля аренды в зарплате (%) — помесячно</h3>
-      <p className="text-sm text-slate-400 mb-4">Какой процент зарплаты уходит на аренду 1-комнатной квартиры</p>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
+      <h3 className="text-lg font-light mb-1">Доля аренды в зарплате</h3>
+      <p className="text-xs text-neutral-500 mb-6">Процент зарплаты на аренду 1-комнатной</p>
+      <ResponsiveContainer width="100%" height={360}>
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
-            <linearGradient id="shareGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            <linearGradient id="gShare" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#171717" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="rentShareOfSalary" name="Доля аренды от ЗП (%)" stroke="#ef4444" strokeWidth={2} fill="url(#shareGradient)" dot={false} />
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis tick={axisStyle} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={40} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Area type="monotone" dataKey="rentShareOfSalary" name="Доля" stroke="#171717" strokeWidth={1.5} fill="url(#gShare)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -395,22 +332,21 @@ function RentShareChart({ data }: { data: any[] }) {
 function ApartmentCostChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">💰 Стоимость квартиры 54 м² (помесячно)</h3>
-      <p className="text-sm text-slate-400 mb-4">Динамика стоимости типовой 1-комнатной квартиры</p>
-      <ResponsiveContainer width="100%" height={400}>
-        <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
+      <h3 className="text-lg font-light mb-1">Стоимость квартиры 54 м²</h3>
+      <p className="text-xs text-neutral-500 mb-6">Помесячно</p>
+      <ResponsiveContainer width="100%" height={360}>
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
-            <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+            <linearGradient id="gCost" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#171717" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#171717" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры (₽)" stroke="#8b5cf6" strokeWidth={2} fill="url(#costGradient)" dot={false} />
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={55} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость" stroke="#171717" strokeWidth={1.5} fill="url(#gCost)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -420,9 +356,9 @@ function ApartmentCostChart({ data }: { data: any[] }) {
 function CombinedChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📋 Сводная диаграмма — нормализованная (помесячно)</h3>
-      <p className="text-sm text-slate-400 mb-4">Все показатели относительно первого значения в выбранном периоде (%)</p>
-      <ResponsiveContainer width="100%" height={400}>
+      <h3 className="text-lg font-light mb-1">Сводный график</h3>
+      <p className="text-xs text-neutral-500 mb-6">Рост относительно начала периода, %</p>
+      <ResponsiveContainer width="100%" height={360}>
         <LineChart
           data={data.map((d) => {
             const first = data[0];
@@ -434,19 +370,24 @@ function CombinedChart({ data }: { data: any[] }) {
               apartmentCost54: Number(((d.apartmentCost54 / first.apartmentCost54) * 100).toFixed(1)),
             };
           })}
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
-          <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ paddingTop: '20px' }} />
-          <Line type="monotone" dataKey="salary" name="Зарплата" stroke="#3b82f6" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke="#a855f7" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="rent1room" name="Аренда" stroke="#10b981" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke="#f97316" strokeWidth={2} dot={false} />
+          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} interval="preserveStartEnd" axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
+          <YAxis tick={axisStyle} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={50} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Line type="monotone" dataKey="salary" name="Зарплата" stroke="#171717" strokeWidth={1.5} dot={false} />
+          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke="#525252" strokeWidth={1.5} dot={false} />
+          <Line type="monotone" dataKey="rent1room" name="Аренда" stroke="#a3a3a3" strokeWidth={1.5} dot={false} />
+          <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke="#d4d4d4" strokeWidth={1.5} dot={false} />
         </LineChart>
       </ResponsiveContainer>
+      <div className="flex flex-wrap gap-5 mt-3 text-xs text-neutral-500">
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-900" />Зарплата</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-600" />Цена м²</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-400" />Аренда</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px bg-neutral-300" />Стоимость квартиры</span>
+      </div>
     </div>
   );
 }
