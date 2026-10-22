@@ -50,7 +50,7 @@ export default function App() {
 
   const chartTabs: { id: ChartType; label: string }[] = [
     { id: 'salary-price', label: 'Зарплата и цена м²' },
-    { id: 'rent', label: 'Аренда' },
+    { id: 'rent', label: 'Зарплата и аренда' },
     { id: 'affordability', label: 'Доступность' },
     { id: 'rent-share', label: 'Доля аренды' },
     { id: 'apartment-cost', label: 'Стоимость 54 м²' },
@@ -260,8 +260,8 @@ function SalaryPriceChart({ data }: { data: any[] }) {
 function RentChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Аренда и зарплата</h3>
-      <p className="text-xs text-neutral-500 mb-6">Сравнение динамики, ₽</p>
+      <h3 className="text-lg font-light mb-1">Зарплата и аренда</h3>
+      <p className="text-xs text-neutral-500 mb-6">Аренда 1-комнатной квартиры · Сравнение динамики, ₽</p>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
