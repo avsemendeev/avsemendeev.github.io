@@ -31,6 +31,16 @@ const formatCurrency = (value: number) => {
   return value.toString();
 };
 
+const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+
+const formatMonthTick = (value: string) => {
+  const [year, month] = value.split('-');
+  const m = parseInt(month);
+  if (m === 1) return `${year}`;
+  if (m === 7) return `Июл`;
+  return '';
+};
+
 type ChartType = 'salary-price' | 'rent' | 'affordability' | 'rent-share' | 'combined' | 'apartment-cost';
 
 export default function App() {
@@ -45,7 +55,7 @@ export default function App() {
     });
   }, [startYear, endYear]);
 
-  // Показываем только январские данные для менее зашумленного графика
+  // Показываем только январские данные для таблицы
   const yearlyData = useMemo(() => {
     return filteredData.filter((d) => d.month.endsWith('-01'));
   }, [filteredData]);
@@ -78,7 +88,7 @@ export default function App() {
             🏘️ Доступность жилья в России
           </h1>
           <p className="text-slate-400 text-sm mt-1">
-            Аналитика рынка недвижимости и доходов населения • 2000–2025
+            Аналитика рынка недвижимости и доходов населения • 2000–2025 (помесячно)
           </p>
         </div>
       </header>
@@ -109,7 +119,7 @@ export default function App() {
                 ))}
               </select>
             </div>
-            <div className="flex gap-2 ml-auto">
+            <div className="flex gap-2 ml-auto flex-wrap">
               <button
                 onClick={() => { setStartYear(2000); setEndYear(2025); }}
                 className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
@@ -128,8 +138,17 @@ export default function App() {
               >
                 2010–2020
               </button>
+              <button
+                onClick={() => { setStartYear(2000); setEndYear(2010); }}
+                className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+              >
+                2000–2010
+              </button>
             </div>
           </div>
+          <p className="text-xs text-slate-500 mt-3">
+            📅 Показано {filteredData.length} месяцев данных
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -180,42 +199,47 @@ export default function App() {
 
         {/* Chart Area */}
         <div className="bg-slate-800/50 rounded-2xl p-4 md:p-6 border border-slate-700/50 backdrop-blur-sm">
-          {activeChart === 'salary-price' && <SalaryPriceChart data={yearlyData} />}
-          {activeChart === 'rent' && <RentChart data={yearlyData} />}
-          {activeChart === 'affordability' && <AffordabilityChart data={yearlyData} />}
-          {activeChart === 'rent-share' && <RentShareChart data={yearlyData} />}
-          {activeChart === 'apartment-cost' && <ApartmentCostChart data={yearlyData} />}
-          {activeChart === 'combined' && <CombinedChart data={yearlyData} />}
+          {activeChart === 'salary-price' && <SalaryPriceChart data={filteredData} />}
+          {activeChart === 'rent' && <RentChart data={filteredData} />}
+          {activeChart === 'affordability' && <AffordabilityChart data={filteredData} />}
+          {activeChart === 'rent-share' && <RentShareChart data={filteredData} />}
+          {activeChart === 'apartment-cost' && <ApartmentCostChart data={filteredData} />}
+          {activeChart === 'combined' && <CombinedChart data={filteredData} />}
         </div>
 
         {/* Full Data Table */}
         <div className="bg-slate-800/50 rounded-2xl p-4 md:p-6 border border-slate-700/50 backdrop-blur-sm">
-          <h3 className="text-lg font-semibold mb-4 text-slate-200">📋 Таблица данных (ежегодно, январь)</h3>
-          <div className="overflow-x-auto">
+          <h3 className="text-lg font-semibold mb-4 text-slate-200">📋 Таблица данных (помесячно)</h3>
+          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 bg-slate-800">
                 <tr className="border-b border-slate-700">
-                  <th className="text-left py-2 px-2 text-slate-400 font-medium">Год</th>
+                  <th className="text-left py-2 px-2 text-slate-400 font-medium">Месяц</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">ЗП, ₽</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Цена м², ₽</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Аренда, ₽</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">54м², млн ₽</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Лет</th>
                   <th className="text-right py-2 px-2 text-slate-400 font-medium">Аренда/ЗП %</th>
+                  <th className="text-right py-2 px-2 text-slate-400 font-medium">м²/ЗП</th>
                 </tr>
               </thead>
               <tbody>
-                {yearlyData.map((d) => (
-                  <tr key={d.month} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                    <td className="py-2 px-2 font-medium text-slate-200">{d.month.split('-')[0]}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{formatNumber(d.salary)}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{formatNumber(d.pricePerSqm)}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{formatNumber(d.rent1room)}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{(d.apartmentCost54 / 1000000).toFixed(1)}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{d.yearsToBuy}</td>
-                    <td className="py-2 px-2 text-right text-slate-300">{d.rentShareOfSalary}%</td>
-                  </tr>
-                ))}
+                {filteredData.map((d) => {
+                  const [y, m] = d.month.split('-');
+                  return (
+                    <tr key={d.month} className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
+                      <td className="py-1.5 px-2 font-medium text-slate-200">{monthNames[parseInt(m)-1]} {y}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.salary)}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.pricePerSqm)}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{formatNumber(d.rent1room)}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{(d.apartmentCost54 / 1000000).toFixed(2)}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{d.yearsToBuy}</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{d.rentShareOfSalary}%</td>
+                      <td className="py-1.5 px-2 text-right text-slate-300">{d.sqmToSalary}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -252,15 +276,17 @@ function StatCard({ title, value, subtitle, color }: { title: string; value: str
 // Custom Tooltip
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
+    const [year, month] = label.split('-');
+    const m = monthNames[parseInt(month) - 1];
     return (
       <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-xl">
-        <p className="text-slate-300 font-medium mb-1">{label}</p>
+        <p className="text-slate-300 font-medium mb-1">{m} {year}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
             {entry.name}: {typeof entry.value === 'number' ? formatNumber(entry.value) : entry.value}
             {entry.name?.includes('ЗП') || entry.name?.includes('Цена') || entry.name?.includes('Аренда') || entry.name?.includes('Стоимость') ? ' ₽' : ''}
-            {entry.name?.includes('лет') ? ' лет' : ''}
-            {entry.name?.includes('Доля') ? '%' : ''}
+            {entry.name?.includes('лет') || entry.name?.includes('Лет') ? ' лет' : ''}
+            {entry.name?.includes('Доля') || entry.name?.includes('%') ? '%' : ''}
           </p>
         ))}
       </div>
@@ -273,18 +299,18 @@ function CustomTooltip({ active, payload, label }: any) {
 function SalaryPriceChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📈 Динамика зарплаты и цены за м²</h3>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">📈 Динамика зарплаты и цены за м² (помесячно)</h3>
       <p className="text-sm text-slate-400 mb-4">Сравнение роста доходов и стоимости недвижимости</p>
       <ResponsiveContainer width="100%" height={400}>
         <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis yAxisId="left" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
           <YAxis yAxisId="right" orientation="right" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
-          <Bar yAxisId="left" dataKey="salary" name="Зарплата (₽)" fill="#3b82f6" opacity={0.7} radius={[4, 4, 0, 0]} />
-          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена за м² (₽)" stroke="#a855f7" strokeWidth={3} dot={{ r: 3 }} />
+          <Line yAxisId="left" type="monotone" dataKey="salary" name="Зарплата (₽)" stroke="#3b82f6" strokeWidth={2} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена за м² (₽)" stroke="#a855f7" strokeWidth={2} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -294,12 +320,12 @@ function SalaryPriceChart({ data }: { data: any[] }) {
 function RentChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">🏠 Динамика стоимости аренды 1-комнатной квартиры</h3>
-      <p className="text-sm text-slate-400 mb-4">Рост арендной платы за 25 лет</p>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">🏠 Динамика стоимости аренды 1-комнатной квартиры (помесячно)</h3>
+      <p className="text-sm text-slate-400 mb-4">Рост арендной платы за период</p>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={formatCurrency} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -309,7 +335,7 @@ function RentChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="rent1room" name="Аренда 1к (₽)" stroke="#10b981" strokeWidth={2} fill="url(#rentGradient)" />
+          <Area type="monotone" dataKey="rent1room" name="Аренда 1к (₽)" stroke="#10b981" strokeWidth={2} fill="url(#rentGradient)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -319,12 +345,12 @@ function RentChart({ data }: { data: any[] }) {
 function AffordabilityChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">⏱️ Доступность покупки квартиры (лет накоплений)</h3>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">⏱️ Доступность покупки квартиры — лет накоплений (помесячно)</h3>
       <p className="text-sm text-slate-400 mb-4">Сколько лет нужно откладывать всю зарплату для покупки квартиры 54 м²</p>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} domain={['dataMin - 1', 'dataMax + 1']} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -334,7 +360,7 @@ function AffordabilityChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="yearsToBuy" name="Лет до покупки" stroke="#f97316" strokeWidth={2.5} fill="url(#affordGradient)" dot={{ r: 2 }} />
+          <Area type="monotone" dataKey="yearsToBuy" name="Лет до покупки" stroke="#f97316" strokeWidth={2} fill="url(#affordGradient)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -344,12 +370,12 @@ function AffordabilityChart({ data }: { data: any[] }) {
 function RentShareChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📊 Доля аренды в зарплате (%)</h3>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">📊 Доля аренды в зарплате (%) — помесячно</h3>
       <p className="text-sm text-slate-400 mb-4">Какой процент зарплаты уходит на аренду 1-комнатной квартиры</p>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -359,7 +385,7 @@ function RentShareChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="rentShareOfSalary" name="Доля аренды от ЗП (%)" stroke="#ef4444" strokeWidth={2} fill="url(#shareGradient)" />
+          <Area type="monotone" dataKey="rentShareOfSalary" name="Доля аренды от ЗП (%)" stroke="#ef4444" strokeWidth={2} fill="url(#shareGradient)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -369,12 +395,12 @@ function RentShareChart({ data }: { data: any[] }) {
 function ApartmentCostChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">💰 Стоимость квартиры 54 м²</h3>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">💰 Стоимость квартиры 54 м² (помесячно)</h3>
       <p className="text-sm text-slate-400 mb-4">Динамика стоимости типовой 1-комнатной квартиры</p>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -384,7 +410,7 @@ function ApartmentCostChart({ data }: { data: any[] }) {
               <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры (₽)" stroke="#8b5cf6" strokeWidth={2.5} fill="url(#costGradient)" />
+          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры (₽)" stroke="#8b5cf6" strokeWidth={2} fill="url(#costGradient)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -394,7 +420,7 @@ function ApartmentCostChart({ data }: { data: any[] }) {
 function CombinedChart({ data }: { data: any[] }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2 text-slate-200">📋 Сводная диаграмма (нормализованная)</h3>
+      <h3 className="text-lg font-semibold mb-2 text-slate-200">📋 Сводная диаграмма — нормализованная (помесячно)</h3>
       <p className="text-sm text-slate-400 mb-4">Все показатели относительно первого значения в выбранном периоде (%)</p>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
@@ -411,12 +437,12 @@ function CombinedChart({ data }: { data: any[] }) {
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => v.split('-')[0]} />
+          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} tickFormatter={formatMonthTick} interval="preserveStartEnd" />
           <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
-          <Line type="monotone" dataKey="salary" name="Зарплата" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
-          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke="#a855f7" strokeWidth={2.5} dot={false} />
+          <Line type="monotone" dataKey="salary" name="Зарплата" stroke="#3b82f6" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke="#a855f7" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="rent1room" name="Аренда" stroke="#10b981" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke="#f97316" strokeWidth={2} dot={false} />
         </LineChart>
