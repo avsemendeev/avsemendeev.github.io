@@ -48,10 +48,10 @@ const formatCurrency = (value: number) => {
 
 const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
 
-const formatMonthTick = (value: string) => {
+const formatMonthTick = (value: string): string => {
   // Метка показывается только на январских тиках — выводим год (2001, 2002, ...)
   const [year, month] = value.split('-');
-  if (parseInt(month) === 1) return year;
+  if (month && parseInt(month) === 1) return year ?? '';
   return '';
 };
 
