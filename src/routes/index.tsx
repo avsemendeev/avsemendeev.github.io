@@ -82,7 +82,7 @@ function App() {
 
   const filteredData = useMemo(() => {
     return housingData.filter((d) => {
-      const year = parseInt(d.month.split('-')[0]);
+      const year = parseInt(d.month.split('-')[0] ?? '0');
       return year >= startYear && year <= endYear;
     });
   }, [startYear, endYear]);
@@ -219,7 +219,7 @@ function App() {
                   const [y, m] = d.month.split('-');
                   return (
                     <tr key={d.month} className="border-b border-neutral-100 hover:bg-neutral-50/50">
-                      <td className="py-1.5 px-3 text-neutral-700">{monthNames[parseInt(m)-1]} {y}</td>
+                      <td className="py-1.5 px-3 text-neutral-700">{monthNames[parseInt(m ?? '1')-1]} {y}</td>
                       <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.salary)}</td>
                       <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.pricePerSqm)}</td>
                       <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.rent1room)}</td>
