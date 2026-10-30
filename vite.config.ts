@@ -9,7 +9,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Static build for GitHub Pages: enabled only when NITRO_PRESET=static is set
 // (see .github/workflows/deploy-pages.yml). Lovable builds are unaffected.
-const staticBuild = process.env.NITRO_PRESET === "static";
+const staticBuild = process.env["NITRO_PRESET"] === "static";
 
 export default defineConfig({
   tanstackStart: {
@@ -21,7 +21,7 @@ export default defineConfig({
   ...(staticBuild
     ? {
         nitro: { preset: "static" as const },
-        vite: { base: process.env.VITE_BASE_PATH || "/" },
+        vite: { base: process.env["VITE_BASE_PATH"] || "/" },
       }
     : {}),
 });
