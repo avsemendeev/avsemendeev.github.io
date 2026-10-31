@@ -98,8 +98,8 @@ function App() {
   }, [s0, e0, isMrot]);
 
   const chartTabs: { id: ChartType; label: string }[] = [
-    { id: 'salary-price', label: 'Зарплата и цена м²' },
-    { id: 'rent', label: 'Зарплата и аренда' },
+    { id: 'salary-price', label: isMrot ? 'МРОТ и цена за м²' : 'Зарплата и цена м²' },
+    { id: 'rent', label: isMrot ? 'МРОТ и аренда' : 'Зарплата и аренда' },
     { id: 'affordability', label: 'Доступность' },
     { id: 'rent-share', label: 'Доля аренды' },
     { id: 'apartment-cost', label: 'Стоимость 54 м²' },
@@ -117,10 +117,10 @@ function App() {
         {/* Header */}
         <header className="mb-12">
           <h1 className="text-3xl font-light tracking-tight text-neutral-900">
-            Доступность жилья
+            Доступность жилья в Москве
           </h1>
           <p className="text-sm text-neutral-500 mt-2">
-            Россия · {minYear}–2026 · помесячные данные{isMrot ? ' · МРОТ в Москве' : ''}
+            {minYear}–2026 · помесячные данные
           </p>
           <div className="flex gap-1 mt-4">
             <span className="w-8 h-0.5 rounded-full" style={{ background: C.blue }} />
@@ -327,7 +327,7 @@ function SalaryPriceChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">{wl} и цена за м²</h3>
-      <p className="text-xs text-neutral-500 mb-6">Помесячно, ₽</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
@@ -353,7 +353,7 @@ function RentChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">{wl} и аренда</h3>
-      <p className="text-xs text-neutral-500 mb-6">Аренда 1-комнатной квартиры · Сравнение динамики, ₽</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
@@ -379,7 +379,7 @@ function AffordabilityChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Доступность покупки</h3>
-      <p className="text-xs text-neutral-500 mb-6">Лет накоплений для квартиры 54 м²</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -405,7 +405,7 @@ function RentShareChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Доля аренды в зарплате</h3>
-      <p className="text-xs text-neutral-500 mb-6">Процент зарплаты на аренду 1-комнатной</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -416,7 +416,7 @@ function RentShareChart({ data }: { data: any[] }) {
           </defs>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis tick={axisStyle} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={40} />
+          <YAxis tick={axisStyle} domain={[0, 'auto']} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={40} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
           <Area type="monotone" dataKey="rentShareOfSalary" name="Доля" stroke={C.coral} strokeWidth={1.5} fill="url(#gShare)" dot={false} />
         </AreaChart>
@@ -431,7 +431,7 @@ function ApartmentCostChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Стоимость квартиры 54 м²</h3>
-      <p className="text-xs text-neutral-500 mb-6">Помесячно</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -457,7 +457,7 @@ function CombinedChart({ data }: { data: any[] }) {
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Сводный график</h3>
-      <p className="text-xs text-neutral-500 mb-6">Рост относительно начала периода, %</p>
+      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
       <ResponsiveContainer width="100%" height={360}>
         <LineChart
           data={data.map((d) => {
