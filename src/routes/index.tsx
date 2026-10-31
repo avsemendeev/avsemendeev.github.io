@@ -361,13 +361,13 @@ function RentChart({ data }: { data: any[] }) {
           <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
           <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} />
-          <Line yAxisId="right" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
+          <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
+          <Line yAxisId="right" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
       <div className="flex gap-6 mt-3 text-xs text-neutral-500">
-        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.green }} />Аренда</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue, borderTop: `1px dashed ${C.blue}` }} />{wl}</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ borderTop: `2px dashed ${C.green}` }} />Аренда</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
       </div>
     </div>
   );
@@ -436,15 +436,15 @@ function ApartmentCostChart({ data }: { data: any[] }) {
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
             <linearGradient id="gCost" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={C.coral} stopOpacity={0.15} />
-              <stop offset="100%" stopColor={C.coral} stopOpacity={0} />
+              <stop offset="0%" stopColor={C.lavender} stopOpacity={0.15} />
+              <stop offset="100%" stopColor={C.lavender} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
           <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={55} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость" stroke={C.coral} strokeWidth={1.5} fill="url(#gCost)" dot={false} />
+          <Area type="monotone" dataKey="apartmentCost54" name="Стоимость" stroke={C.lavender} strokeWidth={1.5} fill="url(#gCost)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -479,14 +479,14 @@ function CombinedChart({ data }: { data: any[] }) {
           <Line type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
           <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={1.5} dot={false} />
           <Line type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} />
-          <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke={C.lavender} strokeWidth={1.5} dot={false} />
+          <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke={C.lavender} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
         </LineChart>
       </ResponsiveContainer>
       <div className="flex flex-wrap gap-5 mt-3 text-xs text-neutral-500">
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.coral }} />Цена м²</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.green }} />Аренда</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.lavender }} />Стоимость квартиры</span>
+        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ borderTop: `2px dashed ${C.lavender}` }} />Стоимость квартиры</span>
       </div>
     </div>
   );
