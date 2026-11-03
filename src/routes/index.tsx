@@ -378,7 +378,7 @@ function RentChart({ data }: { data: any[] }) {
       <h3 className="text-lg font-light mb-1">{wl} и аренда</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
       <Conclusion>
-        Аренда подорожала на {rG}% при росте {wl} на {sG}%. К концу периода аренда занимает {l.rentShareOfSalary}% дохода против {f.rentShareOfSalary}% в начале.
+        Аренда подорожала на {rG}% при росте {wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'} на {sG}%. К концу периода аренда занимает {l.rentShareOfSalary}% дохода против {f.rentShareOfSalary}% в начале.
       </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
