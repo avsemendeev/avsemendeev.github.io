@@ -467,7 +467,6 @@ function CombinedChart({ data }: { data: any[] }) {
               salary: Number(((d.salary / first.salary) * 100).toFixed(1)),
               pricePerSqm: Number(((d.pricePerSqm / first.pricePerSqm) * 100).toFixed(1)),
               rent1room: Number(((d.rent1room / first.rent1room) * 100).toFixed(1)),
-              apartmentCost54: Number(((d.apartmentCost54 / first.apartmentCost54) * 100).toFixed(1)),
             };
           })}
           margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
@@ -479,14 +478,12 @@ function CombinedChart({ data }: { data: any[] }) {
           <Line type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
           <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={1.5} dot={false} />
           <Line type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} />
-          <Line type="monotone" dataKey="apartmentCost54" name="Стоимость квартиры" stroke={C.lavender} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
         </LineChart>
       </ResponsiveContainer>
       <div className="flex flex-wrap gap-5 mt-3 text-xs text-neutral-500">
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.coral }} />Цена м²</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.green }} />Аренда</span>
-        <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ borderTop: `2px dashed ${C.lavender}` }} />Стоимость квартиры</span>
       </div>
     </div>
   );
