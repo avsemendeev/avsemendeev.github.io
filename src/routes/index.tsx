@@ -1,4 +1,4 @@
-import { useState, useMemo, createContext, useContext } from 'react';
+import { useState, useMemo, createContext, useContext, type ReactNode } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import {
   LineChart,
@@ -321,13 +321,32 @@ const C = {
   lavender: '#8a7ba8',
 };
 
+// Блок «Вывод» под описанием графика
+function Conclusion({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-xs text-neutral-700 mb-6 max-w-2xl">
+      <span className="font-medium">Вывод.</span> {children}
+    </p>
+  );
+}
+
+const pct = (a: number, b: number) => Math.round(((b / a - 1) * 100));
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SalaryPriceChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const sG = pct(f.salary, l.salary);
+  const pG = pct(f.pricePerSqm, l.pricePerSqm);
   return (
     <div>
       <h3 className="text-lg font-light mb-1">{wl} и цена за м²</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
+      <Conclusion>
+        За период {wl} вырос на {sG}%, цена м² — на {pG}%.{' '}
+        {pG > sG ? 'Цены росли быстрее дохода — квадратный метр стал менее доступным.' : pG < sG ? 'Доход рос быстрее цен — квадратный метр стал доступнее.' : 'Доход и цены выросли одинаково — доступность метра не изменилась.'}
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
@@ -350,10 +369,17 @@ function SalaryPriceChart({ data }: { data: any[] }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RentChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const rG = pct(f.rent1room, l.rent1room);
+  const sG = pct(f.salary, l.salary);
   return (
     <div>
       <h3 className="text-lg font-light mb-1">{wl} и аренда</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
+      <Conclusion>
+        Аренда подорожала на {rG}% при росте {wl} на {sG}%. К концу периода аренда занимает {l.rentShareOfSalary}% дохода против {f.rentShareOfSalary}% в начале.
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#f5f5f5" vertical={false} />
@@ -376,10 +402,17 @@ function RentChart({ data }: { data: any[] }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AffordabilityChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const y0 = f.yearsToBuy;
+  const y1 = l.yearsToBuy;
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Доступность покупки</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
+      <Conclusion>
+        Копить на квартиру 54 м² нужно {y1} лет против {y0} лет в начале периода — {y1 > y0 ? 'покупка отодвинулась' : y1 < y0 ? 'жильё стало доступнее' : 'доступность не изменилась'}.
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -402,10 +435,17 @@ function AffordabilityChart({ data }: { data: any[] }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function RentShareChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const r0 = f.rentShareOfSalary;
+  const r1v = l.rentShareOfSalary;
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Доля аренды в зарплате</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
+      <Conclusion>
+        Аренда занимает {r1v}% дохода против {r0}% в начале периода{r1v > 100 ? ' — дохода уже не хватает на аренду' : ''}.
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -428,10 +468,18 @@ function RentShareChart({ data }: { data: any[] }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ApartmentCostChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const m0 = (f.apartmentCost54 / 1000000).toFixed(1);
+  const m1 = (l.apartmentCost54 / 1000000).toFixed(1);
+  const g = pct(f.apartmentCost54, l.apartmentCost54);
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Стоимость квартиры 54 м²</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
+      <Conclusion>
+        Квартира 54 м² подорожала с {m0} до {m1} млн ₽ — плюс {g}% за период.
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <defs>
@@ -454,10 +502,22 @@ function ApartmentCostChart({ data }: { data: any[] }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CombinedChart({ data }: { data: any[] }) {
   const wl = useContext(WageCtx);
+  const f = data[0];
+  const l = data[data.length - 1];
+  const items = [
+    { name: wl, g: pct(f.salary, l.salary) },
+    { name: 'цена м²', g: pct(f.pricePerSqm, l.pricePerSqm) },
+    { name: 'аренда', g: pct(f.rent1room, l.rent1room) },
+  ].sort((a, b) => b.g - a.g);
+  const top = items[0] ?? { name: '', g: 0 };
+  const low = items[items.length - 1] ?? { name: '', g: 0 };
   return (
     <div>
       <h3 className="text-lg font-light mb-1">Сводный график</h3>
-      <p className="text-xs text-neutral-500 mb-6 max-w-2xl">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
+      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
+      <Conclusion>
+        Лидирует по росту {top.name} (+{top.g}%), замыкает список {low.name} (+{low.g}%).
+      </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <LineChart
           data={data.map((d) => {
