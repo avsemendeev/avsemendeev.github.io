@@ -324,8 +324,8 @@ const C = {
 // Блок «Вывод» под описанием графика
 function Conclusion({ children }: { children: ReactNode }) {
   return (
-    <p className="text-xs text-neutral-700 mb-6 max-w-2xl">
-      <span className="font-medium">Вывод.</span> {children}
+    <p className="text-xs text-neutral-500 mb-6 max-w-2xl">
+      <span className="font-medium">Вывод:</span> {children}
     </p>
   );
 }
@@ -341,7 +341,6 @@ function SalaryPriceChart({ data }: { data: any[] }) {
   const pG = pct(f.pricePerSqm, l.pricePerSqm);
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">{wl} и цена за м²</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
       <Conclusion>
         За период {wl === 'МРОТ' ? 'МРОТ вырос' : 'зарплата выросла'} на {sG}%, цена м² — на {pG}%.{' '}
@@ -375,7 +374,6 @@ function RentChart({ data }: { data: any[] }) {
   const sG = pct(f.salary, l.salary);
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">{wl} и аренда</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
       <Conclusion>
         Аренда подорожала на {rG}% при росте {wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'} на {sG}%. К концу периода аренда занимает {l.rentShareOfSalary}% дохода против {f.rentShareOfSalary}% в начале.
@@ -408,7 +406,6 @@ function AffordabilityChart({ data }: { data: any[] }) {
   const y1 = l.yearsToBuy;
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Доступность покупки</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
       <Conclusion>
         Копить на квартиру 54 м² нужно {y1} лет против {y0} лет в начале периода — {y1 > y0 ? 'покупка отодвинулась' : y1 < y0 ? 'жильё стало доступнее' : 'доступность не изменилась'}.
@@ -441,7 +438,6 @@ function RentShareChart({ data }: { data: any[] }) {
   const r1v = l.rentShareOfSalary;
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Доля аренды в зарплате</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
       <Conclusion>
         Аренда занимает {r1v}% дохода против {r0}% в начале периода{r1v > 100 ? ' — дохода уже не хватает на аренду' : ''}.
@@ -475,7 +471,6 @@ function ApartmentCostChart({ data }: { data: any[] }) {
   const g = pct(f.apartmentCost54, l.apartmentCost54);
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Стоимость квартиры 54 м²</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
       <Conclusion>
         Квартира 54 м² подорожала с {m0} до {m1} млн ₽ — плюс {g}% за период.
@@ -513,7 +508,6 @@ function CombinedChart({ data }: { data: any[] }) {
   const low = items[items.length - 1] ?? { name: '', g: 0 };
   return (
     <div>
-      <h3 className="text-lg font-light mb-1">Сводный график</h3>
       <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
       <Conclusion>
         Лидирует по росту {top.name === 'Зарплата' ? 'зарплата' : top.name} (+{top.g}%), замыкает список {low.name === 'Зарплата' ? 'зарплата' : low.name} (+{low.g}%).
