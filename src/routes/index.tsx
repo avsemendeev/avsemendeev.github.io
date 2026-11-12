@@ -361,8 +361,8 @@ function SalaryPriceChart({ data }: { data: any[] }) {
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Line yAxisId="left" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={2.25} dot={false} />
           <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={2.25} dot={false} strokeDasharray="4 3" />
@@ -393,8 +393,8 @@ function RentChart({ data }: { data: any[] }) {
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={2.25} dot={false} strokeDasharray="4 3" />
           <Line yAxisId="right" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={2.25} dot={false} />
@@ -496,7 +496,7 @@ function ApartmentCostChart({ data }: { data: any[] }) {
           </defs>
           <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={55} />
+          <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={68} />
           <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Area type="monotone" dataKey="apartmentCost54" name="Стоимость" stroke={C.lavender} strokeWidth={1.5} fill="url(#gCost)" dot={false} />
         </AreaChart>
