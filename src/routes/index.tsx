@@ -276,14 +276,39 @@ function App() {
   );
 }
 
-function StatItem({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
+function StatItem({ label, value, sub, color, spark }: { label: string; value: string; sub: string; color: string; spark: number[] }) {
   return (
     <div className="relative">
       <span className="absolute top-0 left-0 w-6 h-0.5 rounded-full" style={{ background: color }} />
       <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1 pt-2">{label}</p>
       <p className="text-2xl font-light tabular-nums text-neutral-900">{value}</p>
       <p className="text-xs text-neutral-500 mt-1">{sub}</p>
+      <Sparkline values={spark} color={color} />
     </div>
+  );
+}
+
+// Мини-график динамики показателя за выбранный период
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  if (values.length < 2) return null;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const step = 100 / (values.length - 1);
+  const pts = values.map(
+    (v, i) => `${(i * step).toFixed(2)},${(27 - ((v - min) / span) * 24).toFixed(2)}`,
+  );
+  const line = `M${pts.join(' L')}`;
+  return (
+    <svg
+      viewBox="0 0 100 30"
+      preserveAspectRatio="none"
+      className="block w-full h-9 mt-3"
+      aria-hidden="true"
+    >
+      <path d={`${line} L100,30 L0,30 Z`} fill={color} opacity={0.08} />
+      <path d={line} fill="none" stroke={color} strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+    </svg>
   );
 }
 
