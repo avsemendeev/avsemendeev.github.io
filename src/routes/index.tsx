@@ -111,154 +111,139 @@ function App() {
   const salaryGrowth = latest && first ? ((latest.salary / first.salary - 1) * 100).toFixed(0) : '0';
   const priceGrowth = latest && first ? ((latest.pricePerSqm / first.pricePerSqm - 1) * 100).toFixed(0) : '0';
 
+  const presets = [
+    ...(isMrot ? [{ label: '2010–2026', s: 2010, e: 2026 }] : [{ label: '2000–2026', s: 2000, e: 2026 }]),
+    { label: '2010–2020', s: 2010, e: 2020 },
+    { label: '2020–2026', s: 2020, e: 2026 },
+  ];
+  const selectCls = 'appearance-none bg-muted rounded-lg py-1.5 px-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer';
+
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
-      <div className="max-w-6xl mx-auto px-5 py-10">
+    <div className="min-h-screen bg-background text-foreground font-sans">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[image:var(--gradient-hero)]" />
+      <div className="relative max-w-6xl mx-auto px-5 py-10 md:py-14">
         {/* Header */}
-        <header className="mb-12">
-          <h1 className="text-3xl font-light tracking-tight text-neutral-900">
-            Доступность жилья в Москве
-          </h1>
-          <p className="text-sm text-neutral-500 mt-2">
-            {minYear}–2026 · помесячные данные
-          </p>
-          <div className="flex gap-1 mt-4">
-            <span className="w-8 h-0.5 rounded-full" style={{ background: C.blue }} />
-            <span className="w-8 h-0.5 rounded-full" style={{ background: C.coral }} />
-            <span className="w-8 h-0.5 rounded-full" style={{ background: C.green }} />
-            <span className="w-8 h-0.5 rounded-full" style={{ background: C.lavender }} />
+        <header className="mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-card/70 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground shadow-[var(--shadow-soft)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              {minYear}–2026 · помесячные данные
+            </span>
+            <h1 className="mt-4 font-display text-4xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
+              Доступность жилья<br /><span className="text-primary">в Москве</span>
+            </h1>
+          </div>
+          <div className="inline-flex p-1 rounded-2xl bg-card shadow-[var(--shadow-soft)] self-start md:self-auto">
+            {([
+              { id: 'salary', label: 'Средняя заработная плата' },
+              { id: 'mrot', label: 'МРОТ (Москва)' },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setSection(t.id)}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                  section === t.id ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </header>
 
-        {/* Sections */}
-        <div className="flex gap-2 mb-8">
-          {([
-            { id: 'salary', label: 'Средняя заработная плата' },
-            { id: 'mrot', label: 'МРОТ (Москва)' },
-          ] as const).map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSection(t.id)}
-              className={`px-4 py-2 text-sm rounded-full border transition-colors ${
-                section === t.id
-                  ? 'bg-neutral-900 text-white border-neutral-900'
-                  : 'text-neutral-600 border-neutral-200 hover:border-neutral-400'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
         {/* Controls */}
-        <div className="flex flex-wrap items-center gap-4 mb-10 pb-6 border-b border-neutral-200">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-neutral-500">Период</span>
-            <select
-              value={s0}
-              onChange={(e) => setStartYear(Number(e.target.value))}
-              className="bg-transparent border-b border-neutral-300 py-1 px-1 text-neutral-900 focus:outline-none focus:border-neutral-900"
-            >
+        <div className="flex flex-wrap items-center gap-3 mb-6 rounded-2xl bg-card p-3 shadow-[var(--shadow-soft)]">
+          <div className="flex items-center gap-2 text-sm pl-1">
+            <span className="text-muted-foreground">Период</span>
+            <select value={s0} onChange={(e) => setStartYear(Number(e.target.value))} className={selectCls}>
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
-            <span className="text-neutral-400">—</span>
-            <select
-              value={e0}
-              onChange={(e) => setEndYear(Number(e.target.value))}
-              className="bg-transparent border-b border-neutral-300 py-1 px-1 text-neutral-900 focus:outline-none focus:border-neutral-900"
-            >
+            <span className="text-muted-foreground">—</span>
+            <select value={e0} onChange={(e) => setEndYear(Number(e.target.value))} className={selectCls}>
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
           </div>
-          <div className="flex gap-1 ml-auto">
-            {[
-              ...(isMrot ? [{ label: '2010–2026', s: 2010, e: 2026 }] : [{ label: '2000–2026', s: 2000, e: 2026 }]),
-              { label: '2010–2020', s: 2010, e: 2020 },
-              { label: '2020–2026', s: 2020, e: 2026 },
-            ].map((p) => (
-              <button
-                key={p.label}
-                onClick={() => { setStartYear(p.s); setEndYear(p.e); }}
-                className="px-3 py-1 text-xs text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-400 rounded-full transition-colors"
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-1.5 ml-auto">
+            {presets.map((p) => {
+              const on = s0 === p.s && e0 === p.e;
+              return (
+                <button
+                  key={p.label}
+                  onClick={() => { setStartYear(p.s); setEndYear(p.e); }}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${on ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
           <StatItem label={wl} value={`${formatNumber(latest?.salary || 0)} ₽`} sub={`+${salaryGrowth}%`} color={C.blue} spark={filteredData.map((d) => d.salary)} />
           <StatItem label="Цена м²" value={`${formatNumber(latest?.pricePerSqm || 0)} ₽`} sub={`+${priceGrowth}%`} color={C.coral} spark={filteredData.map((d) => d.pricePerSqm)} />
           <StatItem label="Аренда 1к" value={`${formatNumber(latest?.rent1room || 0)} ₽`} sub={`${latest?.rentShareOfSalary || 0}% от ${wl}`} color={C.green} spark={filteredData.map((d) => d.rent1room)} />
           <StatItem label="Доступность" value={`${latest?.yearsToBuy || 0} лет`} sub="квартира 54 м²" color={C.lavender} spark={filteredData.map((d) => d.yearsToBuy)} />
         </div>
 
-        {/* Chart Tabs */}
-        <nav className="flex flex-wrap gap-1 mb-8 border-b border-neutral-200">
-          {chartTabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveChart(tab.id)}
-              className={`px-4 py-2.5 text-sm transition-colors relative ${
-                activeChart === tab.id
-                  ? 'text-neutral-900'
-                  : 'text-neutral-500 hover:text-neutral-800'
-              }`}
-            >
-              {tab.label}
-              {activeChart === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-px bg-neutral-900" />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {/* Chart */}
-        <WageCtx.Provider value={wl}>
-        <section className="mb-16">
-          {activeChart === 'salary-price' && <SalaryPriceChart data={filteredData} />}
-          {activeChart === 'rent' && <RentChart data={filteredData} />}
-          {activeChart === 'affordability' && <AffordabilityChart data={filteredData} />}
-          {activeChart === 'rent-share' && <RentShareChart data={filteredData} />}
-          {activeChart === 'apartment-cost' && <ApartmentCostChart data={filteredData} />}
-          {activeChart === 'combined' && <CombinedChart data={filteredData} />}
+        {/* Chart card */}
+        <section className="mb-6 rounded-3xl bg-card p-4 md:p-7 shadow-[var(--shadow-soft)]">
+          <nav className="flex gap-1 mb-6 overflow-x-auto -mx-1 px-1 pb-1">
+            {chartTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveChart(tab.id)}
+                className={`shrink-0 px-3.5 py-2 text-sm font-medium rounded-xl transition-colors ${
+                  activeChart === tab.id ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          <WageCtx.Provider value={wl}>
+            {activeChart === 'salary-price' && <SalaryPriceChart data={filteredData} />}
+            {activeChart === 'rent' && <RentChart data={filteredData} />}
+            {activeChart === 'affordability' && <AffordabilityChart data={filteredData} />}
+            {activeChart === 'rent-share' && <RentShareChart data={filteredData} />}
+            {activeChart === 'apartment-cost' && <ApartmentCostChart data={filteredData} />}
+            {activeChart === 'combined' && <CombinedChart data={filteredData} />}
+          </WageCtx.Provider>
         </section>
-        </WageCtx.Provider>
 
         {/* Table */}
-        <section className="mb-16">
-          <h2 className="text-sm font-medium text-neutral-500 uppercase tracking-wider mb-4">
-            Данные · помесячно
+        <section className="mb-10 rounded-3xl bg-card shadow-[var(--shadow-soft)] overflow-hidden">
+          <h2 className="font-display text-lg font-semibold px-5 md:px-7 pt-5 pb-4">
+            Данные <span className="text-muted-foreground font-normal">· помесячно</span>
           </h2>
-          <div className="overflow-x-auto max-h-[480px] overflow-y-auto border border-neutral-200 rounded-sm">
+          <div className="overflow-x-auto max-h-[480px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
-                <tr className="border-b border-neutral-200">
-                  <th className="text-left py-2 px-3 font-medium">Месяц</th>
-                  <th className="text-right py-2 px-3 font-medium">{isMrot ? 'МРОТ' : 'ЗП'}, ₽</th>
-                  <th className="text-right py-2 px-3 font-medium">Цена м², ₽</th>
-                  <th className="text-right py-2 px-3 font-medium">Аренда, ₽</th>
-                  <th className="text-right py-2 px-3 font-medium">54 м², млн</th>
-                  <th className="text-right py-2 px-3 font-medium">Лет</th>
-                  <th className="text-right py-2 px-3 font-medium">Аренда/ЗП</th>
-                  <th className="text-right py-2 px-3 font-medium">м²/ЗП</th>
+              <thead className="sticky top-0 bg-muted text-muted-foreground text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-left py-2.5 px-5 font-medium">Месяц</th>
+                  <th className="text-right py-2.5 px-3 font-medium">{isMrot ? 'МРОТ' : 'ЗП'}, ₽</th>
+                  <th className="text-right py-2.5 px-3 font-medium">Цена м², ₽</th>
+                  <th className="text-right py-2.5 px-3 font-medium">Аренда, ₽</th>
+                  <th className="text-right py-2.5 px-3 font-medium">54 м², млн</th>
+                  <th className="text-right py-2.5 px-3 font-medium">Лет</th>
+                  <th className="text-right py-2.5 px-3 font-medium">Аренда/ЗП</th>
+                  <th className="text-right py-2.5 px-5 font-medium">м²/ЗП</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((d) => {
                   const [y, m] = d.month.split('-');
                   return (
-                    <tr key={d.month} className="border-b border-neutral-100 hover:bg-neutral-50/50">
-                      <td className="py-1.5 px-3 text-neutral-700">{monthNames[parseInt(m ?? '1')-1]} {y}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.salary)}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.pricePerSqm)}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{formatNumber(d.rent1room)}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{(d.apartmentCost54 / 1000000).toFixed(2)}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{d.yearsToBuy}</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{d.rentShareOfSalary}%</td>
-                      <td className="py-1.5 px-3 text-right tabular-nums">{d.sqmToSalary}</td>
+                    <tr key={d.month} className="border-t border-border hover:bg-muted/60 transition-colors">
+                      <td className="py-2 px-5 text-muted-foreground">{monthNames[parseInt(m ?? '1')-1]} {y}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{formatNumber(d.salary)}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{formatNumber(d.pricePerSqm)}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{formatNumber(d.rent1room)}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{(d.apartmentCost54 / 1000000).toFixed(2)}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{d.yearsToBuy}</td>
+                      <td className="py-2 px-3 text-right tabular-nums">{d.rentShareOfSalary}%</td>
+                      <td className="py-2 px-5 text-right tabular-nums">{d.sqmToSalary}</td>
                     </tr>
                   );
                 })}
@@ -267,8 +252,7 @@ function App() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="pt-8 border-t border-neutral-200 text-xs text-neutral-400">
+        <footer className="text-xs text-muted-foreground text-center">
           <p>Квартира 54 м² · доступность = стоимость / (зарплата × 12){isMrot ? ' · МРОТ в Москве: clubtk.ru' : ''}</p>
         </footer>
       </div>
@@ -278,11 +262,13 @@ function App() {
 
 function StatItem({ label, value, sub, color, spark }: { label: string; value: string; sub: string; color: string; spark: number[] }) {
   return (
-    <div className="relative">
-      <span className="absolute top-0 left-0 w-6 h-0.5 rounded-full" style={{ background: color }} />
-      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1 pt-2">{label}</p>
-      <p className="text-2xl font-light tabular-nums text-neutral-900">{value}</p>
-      <p className="text-xs text-neutral-500 mt-1">{sub}</p>
+    <div className="group relative rounded-2xl bg-card p-4 md:p-5 shadow-[var(--shadow-soft)] transition-transform hover:-translate-y-0.5">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+      </div>
+      <p className="font-display text-xl md:text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 inline-block rounded-md px-1.5 py-0.5 text-xs font-medium" style={{ color, background: `${color}14` }}>{sub}</p>
       <Sparkline values={spark} color={color} />
     </div>
   );
@@ -318,11 +304,11 @@ function CustomTooltip({ active, payload, label }: any) {
     const [year, month] = label.split('-');
     const m = monthNames[parseInt(month) - 1];
     return (
-      <div className="bg-white border border-neutral-200 px-3 py-2 shadow-sm">
-        <p className="text-xs text-neutral-500 mb-1">{m} {year}</p>
+      <div className="rounded-xl bg-popover px-3 py-2 shadow-[var(--shadow-soft)] border border-border">
+        <p className="text-xs text-muted-foreground mb-1">{m} {year}</p>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, i: number) => (
-          <p key={i} className="text-sm text-neutral-900 tabular-nums">
+          <p key={i} className="text-sm text-popover-foreground tabular-nums">
             <span className="inline-block w-2 h-2 rounded-full mr-1.5" style={{ background: entry.color }} />
             {entry.name}: {typeof entry.value === 'number' ? formatNumber(entry.value) : entry.value}
             {entry.name?.includes('ЗП') || entry.name?.includes('Зарплата') || entry.name?.includes('МРОТ') || entry.name?.includes('Цена') || entry.name?.includes('Аренда') || entry.name?.includes('Стоимость') ? ' ₽' : ''}
@@ -336,21 +322,21 @@ function CustomTooltip({ active, payload, label }: any) {
   return null;
 }
 
-const axisStyle = { fill: '#a3a3a3', fontSize: 11 };
+const axisStyle = { fill: '#8a8f9c', fontSize: 11 };
 
 // Приглушённая палитра
 const C = {
-  blue: '#2d5a87',
-  coral: '#c2614a',
-  green: '#4a8a6a',
-  lavender: '#8a7ba8',
+  blue: '#2f5bea',
+  coral: '#f0603c',
+  green: '#16a37a',
+  lavender: '#8b5cf6',
 };
 
 // Блок «Вывод» под описанием графика
 function Conclusion({ children }: { children: ReactNode }) {
   return (
-    <p className="text-xs text-neutral-500 mb-6 max-w-2xl">
-      <span className="font-medium">Вывод:</span> {children}
+    <p className="text-sm text-muted-foreground mb-6 max-w-3xl leading-relaxed rounded-xl bg-muted px-4 py-3">
+      <span className="font-semibold text-foreground">Вывод:</span> {children}
     </p>
   );
 }
@@ -366,23 +352,23 @@ function SalaryPriceChart({ data }: { data: any[] }) {
   const pG = pct(f.pricePerSqm, l.pricePerSqm);
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Как менялись {wl === 'МРОТ' ? 'МРОТ' : 'средняя зарплата'} и цена квадратного метра жилья. Левая шкала — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, правая — цена м², ₽, помесячно.</p>
       <Conclusion>
         За период {wl === 'МРОТ' ? 'МРОТ вырос' : 'зарплата выросла'} на {sG}%, цена м² — на {pG}%.{' '}
         {pG > sG ? 'Цены росли быстрее дохода — квадратный метр стал менее доступным.' : pG < sG ? 'Доход рос быстрее цен — квадратный метр стал доступнее.' : 'Доход и цены выросли одинаково — доступность метра не изменилась.'}
       </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Line yAxisId="left" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
-          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
+          <Line yAxisId="left" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={2.25} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={2.25} dot={false} strokeDasharray="4 3" />
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="flex gap-6 mt-3 text-xs text-neutral-500">
+      <div className="flex gap-6 mt-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.coral, borderTop: `1px dashed ${C.coral}` }} />Цена м²</span>
       </div>
@@ -399,22 +385,22 @@ function RentChart({ data }: { data: any[] }) {
   const sG = pct(f.salary, l.salary);
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Динамика месячной аренды 1-комнатной квартиры в сравнении с {wl === 'МРОТ' ? 'МРОТ' : 'средней зарплатой'}. Левая шкала — аренда, правая — {wl === 'МРОТ' ? 'МРОТ' : 'зарплата'}, ₽.</p>
       <Conclusion>
         Аренда подорожала на {rG}% при росте {wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'} на {sG}%. К концу периода аренда занимает {l.rentShareOfSalary}% дохода против {f.rentShareOfSalary}% в начале.
       </Conclusion>
       <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={55} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} strokeDasharray="4 3" />
-          <Line yAxisId="right" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
+          <YAxis yAxisId="left" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <YAxis yAxisId="right" orientation="right" tick={axisStyle} tickFormatter={formatCurrency} axisLine={false} tickLine={false} width={68} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
+          <Line yAxisId="left" type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={2.25} dot={false} strokeDasharray="4 3" />
+          <Line yAxisId="right" type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={2.25} dot={false} />
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="flex gap-6 mt-3 text-xs text-neutral-500">
+      <div className="flex gap-6 mt-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ borderTop: `2px dashed ${C.green}` }} />Аренда</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
       </div>
@@ -431,7 +417,7 @@ function AffordabilityChart({ data }: { data: any[] }) {
   const y1 = l.yearsToBuy;
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Сколько лет нужно откладывать весь доход ({wl === 'МРОТ' ? 'МРОТ' : 'зарплату'}), чтобы купить квартиру 54 м²: стоимость квартиры / (доход × 12).</p>
       <Conclusion>
         Копить на квартиру 54 м² нужно {y1} лет против {y0} лет в начале периода — {y1 > y0 ? 'покупка отодвинулась' : y1 < y0 ? 'жильё стало доступнее' : 'доступность не изменилась'}.
       </Conclusion>
@@ -443,10 +429,10 @@ function AffordabilityChart({ data }: { data: any[] }) {
               <stop offset="100%" stopColor={C.lavender} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
           <YAxis tick={axisStyle} domain={['dataMin - 1', 'dataMax + 1']} axisLine={false} tickLine={false} width={40} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Area type="monotone" dataKey="yearsToBuy" name="Лет" stroke={C.lavender} strokeWidth={1.5} fill="url(#gAff)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
@@ -463,7 +449,7 @@ function RentShareChart({ data }: { data: any[] }) {
   const r1v = l.rentShareOfSalary;
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Какую часть месячного дохода ({wl === 'МРОТ' ? 'МРОТ' : 'зарплаты'}) занимает аренда 1-комнатной квартиры: аренда / доход × 100%. Выше 100% — дохода не хватает на аренду.</p>
       <Conclusion>
         Аренда занимает {r1v}% дохода против {r0}% в начале периода{r1v > 100 ? ' — дохода уже не хватает на аренду' : ''}.
       </Conclusion>
@@ -475,10 +461,10 @@ function RentShareChart({ data }: { data: any[] }) {
               <stop offset="100%" stopColor={C.coral} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
           <YAxis tick={axisStyle} domain={[0, 'auto']} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={40} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Area type="monotone" dataKey="rentShareOfSalary" name="Доля" stroke={C.coral} strokeWidth={1.5} fill="url(#gShare)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
@@ -496,7 +482,7 @@ function ApartmentCostChart({ data }: { data: any[] }) {
   const g = pct(f.apartmentCost54, l.apartmentCost54);
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Стоимость типовой квартиры площадью 54 м²: цена м² × 54, помесячно.</p>
       <Conclusion>
         Квартира 54 м² подорожала с {m0} до {m1} млн ₽ — плюс {g}% за период.
       </Conclusion>
@@ -508,10 +494,10 @@ function ApartmentCostChart({ data }: { data: any[] }) {
               <stop offset="100%" stopColor={C.lavender} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
-          <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={55} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
+          <YAxis tick={axisStyle} tickFormatter={(v) => `${(v / 1000000).toFixed(1)} млн`} axisLine={false} tickLine={false} width={68} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
           <Area type="monotone" dataKey="apartmentCost54" name="Стоимость" stroke={C.lavender} strokeWidth={1.5} fill="url(#gCost)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
@@ -533,7 +519,7 @@ function CombinedChart({ data }: { data: any[] }) {
   const low = items[items.length - 1] ?? { name: '', g: 0 };
   return (
     <div>
-      <p className="text-xs text-neutral-500 mb-2 max-w-2xl">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
+      <p className="text-sm text-muted-foreground mb-3 max-w-3xl leading-relaxed">Сравнение темпов роста показателей. Расчёт: значение каждого показателя в месяце делится на его значение в первом месяце выбранного периода и умножается на 100. Первый месяц = 100%; например, 300% означает рост в 3 раза с начала периода.</p>
       <Conclusion>
         Лидирует по росту {top.name === 'Зарплата' ? 'зарплата' : top.name} (+{top.g}%), замыкает список {low.name === 'Зарплата' ? 'зарплата' : low.name} (+{low.g}%).
       </Conclusion>
@@ -550,16 +536,16 @@ function CombinedChart({ data }: { data: any[] }) {
           })}
           margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
         >
-          <CartesianGrid stroke="#f5f5f5" vertical={false} />
+          <CartesianGrid stroke="#eef0f4" strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="month" tick={axisStyle} tickFormatter={formatMonthTick} ticks={yearTicks(data)} axisLine={{ stroke: '#e5e5e5' }} tickLine={false} />
           <YAxis tick={axisStyle} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={50} />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#d4d4d4' }} />
-          <Line type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={1.5} dot={false} />
-          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={1.5} dot={false} />
-          <Line type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={1.5} dot={false} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#c7cbd4' }} />
+          <Line type="monotone" dataKey="salary" name={wl} stroke={C.blue} strokeWidth={2.25} dot={false} />
+          <Line type="monotone" dataKey="pricePerSqm" name="Цена м²" stroke={C.coral} strokeWidth={2.25} dot={false} />
+          <Line type="monotone" dataKey="rent1room" name="Аренда" stroke={C.green} strokeWidth={2.25} dot={false} />
         </LineChart>
       </ResponsiveContainer>
-      <div className="flex flex-wrap gap-5 mt-3 text-xs text-neutral-500">
+      <div className="flex flex-wrap gap-5 mt-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.blue }} />{wl}</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.coral }} />Цена м²</span>
         <span className="flex items-center gap-1.5"><span className="w-4 h-px" style={{ background: C.green }} />Аренда</span>
