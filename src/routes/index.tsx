@@ -303,7 +303,7 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
     <svg
       viewBox="0 0 100 30"
       preserveAspectRatio="none"
-      className="block w-full h-6 mt-2"
+      className="block w-2/3 h-6 mt-2"
       aria-hidden="true"
     >
       <path d={`${line} L100,30 L0,30 Z`} fill={color} opacity={0.08} />
